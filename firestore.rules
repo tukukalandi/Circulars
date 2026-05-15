@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.email == 'tukukalandi@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUploadedFile(data) {
+      let hasCat = data.keys().hasAll(['category']);
+      let hasText = data.keys().hasAll(['textContent']);
+      let expectedSize = 6 + (hasCat ? 1 : 0) + (hasText ? 1 : 0);
+      
+      return data.keys().hasAll(['name', 'fileType', 'driveLink', 'uploaderId', 'createdAt', 'isPublic']) &&
+             data.keys().size() == expectedSize &&
+             (!hasCat || (data.category is string && data.category.size() > 0 && data.category.size() <= 100)) &&
+             (!hasText || (data.textContent is string && data.textContent.size() <= 1500000)) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.fileType is string && data.fileType.size() > 0 && data.fileType.size() <= 100 &&
+             data.driveLink is string && data.driveLink.size() > 0 && data.driveLink.size() <= 1000 &&
+             data.uploaderId is string && data.uploaderId == request.auth.uid &&
+             data.createdAt == request.time &&
+             data.isPublic is bool && data.isPublic == true;
+    }
+
+    match /admins/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isBootstrappedAdmin();
+    }
+
+    match /uploaded_files/{fileId} {
+      // 8. Secure List Queries (The "Query Enforcer")
+      // Explicitly evaluate resource.data to prevent blanket reads
+      allow read: if resource.data.isPublic == true;
+      
+      allow create: if isAdmin() && isValidId(fileId) && isValidUploadedFile(incoming());
+      
+      allow update: if isAdmin() && isValidId(fileId) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'category', 'fileType', 'driveLink', 'textContent']) &&
+        incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 200 &&
+        (!incoming().keys().hasAll(['category']) || (incoming().category is string && incoming().category.size() > 0 && incoming().category.size() <= 100)) &&
+        (!incoming().keys().hasAll(['textContent']) || (incoming().textContent is string && incoming().textContent.size() <= 1500000)) &&
+        incoming().fileType is string && incoming().fileType.size() > 0 && incoming().fileType.size() <= 100 &&
+        incoming().driveLink is string && incoming().driveLink.size() > 0 && incoming().driveLink.size() <= 1000 &&
+        incoming().uploaderId == existing().uploaderId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().isPublic == existing().isPublic
+      );
+      
+      allow delete: if isAdmin() && isValidId(fileId);
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Drive Share Portal",
+  "description": "An admin portal to upload files to Google Drive directly, with a public face sharing the drive links.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

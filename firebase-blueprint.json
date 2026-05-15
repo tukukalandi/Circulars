@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "UploadedFile": {
+      "title": "Uploaded File",
+      "description": "A file link saved after being uploaded to Google Drive.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the file"
+        },
+        "fileType": {
+          "type": "string",
+          "description": "Type of the file"
+        },
+        "driveLink": {
+          "type": "string",
+          "description": "Google Drive Web View Link"
+        },
+        "uploaderId": {
+          "type": "string",
+          "description": "UID of the admin who uploaded it"
+        },
+        "createdAt": {
+          "type": "timestamp",
+          "description": "When the link was saved"
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Must be true for public viewing"
+        }
+      },
+      "required": ["name", "fileType", "driveLink", "uploaderId", "createdAt", "isPublic"]
+    }
+  },
+  "firestore": {
+    "/uploaded_files/{fileId}": {
+      "schema": {
+        "$ref": "#/entities/UploadedFile"
+      },
+      "description": "Files uploaded and linked from Google Drive"
+    }
+  }
+}
