@@ -503,23 +503,25 @@ export default function AdminPage() {
                                 {file.category || 'GENERAL'}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right flex items-center justify-end gap-3">
-                              <a 
-                                href={file.driveLink} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 focus:outline-none"
-                                title="View in Drive"
-                              >
-                                <ExternalLink className="w-5 h-5" />
-                              </a>
-                              <button 
-                                onClick={() => handleDeleteFile(file.id)}
-                                className="text-red-500 hover:text-red-700"
-                                title="Delete from portal"
-                              >
-                                <Trash2 className="w-5 h-5" />
-                              </button>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <div className="flex items-center justify-end gap-3">
+                                <a 
+                                  href={file.driveLink} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 focus:outline-none"
+                                  title="View in Drive"
+                                >
+                                  <ExternalLink className="w-5 h-5" />
+                                </a>
+                                <button 
+                                  onClick={() => handleDeleteFile(file.id)}
+                                  className="text-red-500 hover:text-red-700"
+                                  title="Delete from portal"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}

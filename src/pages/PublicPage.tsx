@@ -116,18 +116,11 @@ export default function PublicPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-white mb-0.5">Department of Posts</h1>
-              <p className="text-sm text-white/80 font-medium">Dhenkanal Postal Division - Updates & Circulars Portal</p>
+              <p className="text-sm text-white/80 font-medium">Dhenkanal RS SO - Updates & Circulars Portal</p>
             </div>
           </div>
           
           <div className="flex items-center gap-3 self-end md:self-center w-full md:w-auto justify-end">
-            <Link 
-              to="/ask-ai" 
-              className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 transition-colors px-4 py-2 rounded-lg text-sm font-bold shadow-sm"
-            >
-              <span className="text-base">✨</span>
-              <span>Ask AI</span>
-            </Link>
             <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-lg text-sm font-medium">
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">Back to Home</span>
