@@ -92,8 +92,12 @@ export default function AdminPage() {
         setGoogleAccessToken(credential.accessToken);
       }
     } catch (error: any) {
-      console.error('Login error', error);
-      alert('Failed to login: ' + error.message);
+      if (error.code === 'auth/popup-closed-by-user') {
+        console.log('Login popup was closed by the user.');
+      } else {
+        console.error('Login error', error);
+        alert('Failed to login: ' + error.message);
+      }
     }
   };
 
@@ -534,6 +538,11 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-[#4d161a] text-white/80 py-6 text-center text-sm mt-auto w-full">
+        <p>Prepared by Kalandi Charan Sahoo, PA, Dhenkanal RS SO.</p>
+      </footer>
     </div>
   );
 }

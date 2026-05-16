@@ -295,6 +295,11 @@ export default function PublicPage() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-[#4d161a] text-white/80 py-6 text-center text-sm mt-auto">
+        <p>Prepared by Kalandi Charan Sahoo, PA, Dhenkanal RS SO.</p>
+      </footer>
     </div>
   );
 }
