@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, setDoc, deleteDoc, collection, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from '../firebase-setup';
-import { LogOut, UploadCloud, AlertCircle, Loader2, HardDrive, Home, Trash2, ExternalLink } from 'lucide-react';
+import { LogOut, UploadCloud, AlertCircle, Loader2, HardDrive, Home, Trash2, ExternalLink, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface UploadedFile {
@@ -33,6 +33,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'upload' | 'manage'>('upload');
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -358,7 +359,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-2xl mx-auto p-6 md:p-8 flex flex-col items-center justify-center">
+      <main className={`flex-1 w-full mx-auto p-6 md:p-8 flex flex-col items-center justify-center ${activeTab === 'manage' ? 'max-w-7xl' : 'max-w-2xl'}`}>
         {!user ? (
           <div className="bg-white p-10 rounded-2xl shadow-xl w-full text-center border">
             <div className="w-20 h-20 bg-[#ffe4e6] text-[#cc2128] rounded-full flex items-center justify-center mx-auto mb-6">
@@ -376,7 +377,7 @@ export default function AdminPage() {
             </button>
           </div>
         ) : (
-          <div className="bg-white p-8 rounded-2xl shadow border w-full max-w-4xl">
+          <div className="bg-white p-8 rounded-2xl shadow border w-full">
             
             <div className="flex border-b mb-6 overflow-x-auto">
               <button 
@@ -507,11 +508,25 @@ export default function AdminPage() {
               </>
             ) : (
               <div>
-                <div className="mb-6 border-b pb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Manage Uploaded Files</h2>
-                    <p className="text-gray-500 text-sm mt-1">
-                        View or remove circulars from the portal.
-                    </p>
+                <div className="mb-6 border-b pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Manage Uploaded Files</h2>
+                      <p className="text-gray-500 text-sm mt-1">
+                          View or remove circulars from the portal.
+                      </p>
+                    </div>
+                    <div className="relative w-full sm:w-auto">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search files..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="block w-full sm:w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-[#cc2128] focus:border-[#cc2128] sm:text-sm"
+                      />
+                    </div>
                 </div>
                 {loadingFiles ? (
                    <div className="flex justify-center items-center h-40">
@@ -533,7 +548,7 @@ export default function AdminPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
-                        {files.map(file => (
+                        {files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()) || f.category?.toLowerCase().includes(searchQuery.toLowerCase())).map(file => (
                           <tr key={file.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                               {new Date(file.createdAt).toLocaleDateString()}
