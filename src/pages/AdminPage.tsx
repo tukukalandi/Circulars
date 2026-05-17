@@ -117,10 +117,49 @@ export default function AdminPage() {
     }
   };
 
-  const uploadToGoogleDrive = async (file: File, token: string) => {
+  const getOrCreateCategoryFolder = async (folderName: string, parentId: string, token: string) => {
+    // 1. Search for existing folder
+    const query = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and '${parentId}' in parents and trashed=false`;
+    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id)`, {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+      }
+    });
+    if (searchRes.ok) {
+      const data = await searchRes.json();
+      if (data.files && data.files.length > 0) {
+        return data.files[0].id; // Return existing folder ID
+      }
+    }
+    
+    // 2. Create if not exists
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder',
+        parents: [parentId]
+      })
+    });
+    if (!createRes.ok) {
+      throw new Error('Failed to create category folder on Google Drive');
+    }
+    const createData = await createRes.json();
+    return createData.id;
+  };
+
+  const uploadToGoogleDrive = async (file: File, token: string, uploadCategory: string) => {
+    const rootFolderId = '1UcVx1b631VGL17MXqUV23sizpUDvcNrI';
+    const folderId = await getOrCreateCategoryFolder(uploadCategory, rootFolderId, token);
+
     var metadata = {
       name: fileName || file.name,
       mimeType: file.type || 'application/octet-stream',
+      parents: [folderId]
     };
     
     // 1. Create file metadata
@@ -203,8 +242,8 @@ export default function AdminPage() {
     setUploadSuccess(false);
 
     try {
-      // 1. Upload to Google Drive directly
-      const driveFileId = await uploadToGoogleDrive(fileToUpload, googleAccessToken);
+      // 1. Upload to Google Drive directly into the subfolder
+      const driveFileId = await uploadToGoogleDrive(fileToUpload, googleAccessToken, category || 'GENERAL');
       
       // 2. Set to public and get sharable link
       const driveLink = await getWebViewLink(driveFileId, googleAccessToken);
