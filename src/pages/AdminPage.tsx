@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, setDoc, deleteDoc, collection, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from '../firebase-setup';
-import { LogOut, UploadCloud, AlertCircle, Loader2, HardDrive, Home, Trash2, ExternalLink, Search } from 'lucide-react';
+import { LogOut, UploadCloud, AlertCircle, Loader2, HardDrive, Home, Trash2, ExternalLink, Search, FolderTree } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface UploadedFile {
@@ -345,6 +345,13 @@ export default function AdminPage() {
             >
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">Public Site</span>
+            </Link>
+            <Link 
+              to="/categories" 
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              <FolderTree className="w-4 h-4 text-amber-300" />
+              <span className="hidden sm:inline">Categories</span>
             </Link>
             {user && (
               <button 

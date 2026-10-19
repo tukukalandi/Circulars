@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase-setup';
-import { File, Video, Image as ImageIcon, AlignLeft, Link as LinkIcon, Home, Moon, Lock, Bell, Mailbox, Send, X, Megaphone, Search, ChevronDown } from 'lucide-react';
+import { File, Video, Image as ImageIcon, AlignLeft, Link as LinkIcon, Home, Moon, Lock, Bell, Mailbox, Send, X, Megaphone, Search, ChevronDown, FolderTree } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface UploadedFile {
@@ -120,17 +120,27 @@ export default function PublicPage() {
             </div>
           </div>
           
-          <div className="flex items-center gap-3 self-end md:self-center w-full md:w-auto justify-end">
-            <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-lg text-sm font-medium">
+          <div className="flex items-center gap-2.5 self-end md:self-center w-full md:w-auto justify-end flex-wrap">
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/25 transition-colors px-3.5 py-2 rounded-lg text-sm font-medium"
+            >
               <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Home</span>
-            </button>
-            <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors p-2 rounded-lg w-9 h-9">
-              <Moon className="w-4 h-4" />
-            </button>
+              <span className="hidden sm:inline">Home</span>
+            </Link>
+
+            <Link 
+              to="/categories" 
+              className="flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 hover:text-white border border-amber-400/40 transition-colors px-3.5 py-2 rounded-lg text-sm font-semibold shadow-sm"
+              title="Browse circulars by category cards"
+            >
+              <FolderTree className="w-4 h-4 text-amber-300" />
+              <span>Categories</span>
+            </Link>
+
             <Link 
               to="/admin" 
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-lg text-sm font-medium"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-3.5 py-2 rounded-lg text-sm font-medium"
             >
               <Lock className="w-4 h-4" />
               <span>Admin</span>
