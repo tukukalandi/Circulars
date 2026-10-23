@@ -20,6 +20,7 @@ import {
   ExternalLink,
   ChevronRight
 } from 'lucide-react';
+import { CIRCULAR_CATEGORIES } from '../constants/categories';
 
 interface UploadedFile {
   id: string;
@@ -78,9 +79,20 @@ export default function CategoriesPage() {
   const categoryMap = useMemo(() => {
     const map = new Map<string, CategoryMeta>();
     
+    // Seed with all 15 official categories
+    CIRCULAR_CATEGORIES.forEach(cat => {
+      map.set(cat.toUpperCase(), {
+        name: cat,
+        count: 0,
+        latestTimestamp: 0,
+        recentFiles: []
+      });
+    });
+
     files.forEach(f => {
-      const rawCat = (f.category && f.category.trim()) ? f.category.trim().toUpperCase() : 'GENERAL';
-      const existing = map.get(rawCat);
+      const rawCat = (f.category && f.category.trim()) ? f.category.trim() : 'Others';
+      const key = rawCat.toUpperCase();
+      const existing = map.get(key);
       if (existing) {
         existing.count += 1;
         if (f.createdAt > existing.latestTimestamp) {
@@ -90,7 +102,7 @@ export default function CategoriesPage() {
           existing.recentFiles.push(f);
         }
       } else {
-        map.set(rawCat, {
+        map.set(key, {
           name: rawCat,
           count: 1,
           latestTimestamp: f.createdAt,
@@ -104,6 +116,7 @@ export default function CategoriesPage() {
 
   const categoriesList = useMemo(() => {
     const list = Array.from(categoryMap.values());
+    // Show categories with files first (sorted by count desc), then by name
     list.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     return list;
   }, [categoryMap]);
@@ -119,12 +132,13 @@ export default function CategoriesPage() {
   }, [categoriesList, categorySearchQuery]);
 
   // Selected Category Files
-  const activeCategory = selectedCategoryParam.toUpperCase();
+  const activeCategory = selectedCategoryParam.trim();
   const selectedCategoryFiles = useMemo(() => {
     if (!activeCategory) return [];
+    const activeUpper = activeCategory.toUpperCase();
     return files.filter(f => {
-      const cat = (f.category && f.category.trim()) ? f.category.trim().toUpperCase() : 'GENERAL';
-      if (cat !== activeCategory) return false;
+      const cat = (f.category && f.category.trim()) ? f.category.trim().toUpperCase() : 'OTHERS';
+      if (cat !== activeUpper) return false;
       if (!fileSearchQuery.trim()) return true;
       return f.name.toLowerCase().includes(fileSearchQuery.toLowerCase());
     });
@@ -373,7 +387,7 @@ export default function CategoriesPage() {
                               </h3>
                               <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                                 <Calendar className="w-3 h-3 text-gray-400" />
-                                Updated {formatDateShort(cat.latestTimestamp)}
+                                {cat.count > 0 ? `Updated ${formatDateShort(cat.latestTimestamp)}` : 'No circulars yet'}
                               </p>
                             </div>
                           </div>
@@ -384,24 +398,32 @@ export default function CategoriesPage() {
                         </div>
 
                         {/* Recent Files Preview */}
-                        <div className="mt-4 mb-4 bg-[#fbfaf6] rounded-xl p-3 border border-gray-100">
-                          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                            Recent Circulars
-                          </p>
-                          <ul className="space-y-1.5 text-xs text-gray-700">
-                            {cat.recentFiles.map(rf => (
-                              <li key={rf.id} className="truncate flex items-center gap-1.5 hover:text-[#4d161a]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                                <span className="truncate">{rf.name}</span>
-                              </li>
-                            ))}
-                          </ul>
+                        <div className="mt-4 mb-4 bg-[#fbfaf6] rounded-xl p-3 border border-gray-100 min-h-[72px] flex flex-col justify-center">
+                          {cat.count > 0 ? (
+                            <>
+                              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                                Recent Circulars
+                              </p>
+                              <ul className="space-y-1.5 text-xs text-gray-700">
+                                {cat.recentFiles.map(rf => (
+                                  <li key={rf.id} className="truncate flex items-center gap-1.5 hover:text-[#4d161a]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                                    <span className="truncate">{rf.name}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          ) : (
+                            <p className="text-xs text-gray-400 italic text-center py-2">
+                              No circulars uploaded yet in this section
+                            </p>
+                          )}
                         </div>
                       </div>
 
                       {/* Card Footer Call-To-Action */}
                       <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-semibold text-[#4d161a] group-hover:text-[#cc2128] transition-colors">
-                        <span>Click to view {cat.count} {cat.count === 1 ? 'circular' : 'circulars'}</span>
+                        <span>{cat.count > 0 ? `View ${cat.count} ${cat.count === 1 ? 'circular' : 'circulars'}` : 'Open category section'}</span>
                         <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                           Browse Files <ChevronRight className="w-4 h-4" />
                         </span>

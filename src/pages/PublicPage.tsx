@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase-setup';
 import { File, Video, Image as ImageIcon, AlignLeft, Link as LinkIcon, Home, Moon, Lock, Bell, Mailbox, Send, X, Megaphone, Search, ChevronDown, FolderTree } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { CIRCULAR_CATEGORIES } from '../constants/categories';
 
 interface UploadedFile {
   id: string;
@@ -49,17 +50,22 @@ export default function PublicPage() {
 
   const categories = useMemo(() => {
     const cats = new Set<string>();
+    CIRCULAR_CATEGORIES.forEach(c => cats.add(c));
     files.forEach(f => {
-      if (f.category) cats.add(f.category.toUpperCase());
+      if (f.category && f.category.trim()) {
+        const match = CIRCULAR_CATEGORIES.find(c => c.toLowerCase() === f.category!.trim().toLowerCase());
+        cats.add(match || f.category.trim());
+      }
     });
-    return ['All Categories', ...Array.from(cats)].sort();
+    return ['All Categories', ...Array.from(cats)];
   }, [files]);
 
   const filteredFiles = useMemo(() => {
     return files.filter(f => {
       const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             (f.category && f.category.toLowerCase().includes(searchQuery.toLowerCase()));
-      const matchesCat = selectedCategory === 'All Categories' || (f.category && f.category.toUpperCase() === selectedCategory);
+      const matchesCat = selectedCategory === 'All Categories' || 
+                         (f.category && f.category.toLowerCase() === selectedCategory.toLowerCase());
       return matchesSearch && matchesCat;
     });
   }, [files, searchQuery, selectedCategory]);
